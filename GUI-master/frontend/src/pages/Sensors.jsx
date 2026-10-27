@@ -6,7 +6,7 @@ const sensorCards = [
   {
     label: 'Temperature',
     metric: 'temperature',
-    color: '#f472b6',
+    color: '#22D3EE',
     unit: '°C',
     valueKey: 'temperature',
     digits: 1,
@@ -14,7 +14,7 @@ const sensorCards = [
   {
     label: 'Pressure',
     metric: 'pressure',
-    color: '#38bdf8',
+    color: '#FB923C',
     unit: 'hPa',
     valueKey: 'pressure',
     digits: 2,
@@ -22,7 +22,7 @@ const sensorCards = [
   {
     label: 'Humidity',
     metric: 'humidity',
-    color: '#34d399',
+    color: '#34D399',
     unit: '%',
     valueKey: 'humidity',
     digits: 2,
@@ -30,7 +30,7 @@ const sensorCards = [
   {
     label: 'Altitude',
     metric: 'altitude',
-    color: '#22d3ee',
+    color: '#7c3aed',
     unit: 'm',
     valueKey: 'altitude',
     digits: 2,
@@ -38,7 +38,7 @@ const sensorCards = [
   {
     label: 'Battery Voltage',
     metric: 'voltage',
-    color: '#fbbf24',
+    color: '#9f7aea',
     unit: 'V',
     valueKey: 'voltage',
     digits: 2,
@@ -46,7 +46,7 @@ const sensorCards = [
   {
     label: 'Gas Resistance',
     metric: 'gasResistance',
-    color: '#a78bfa',
+    color: '#c4b5fd',
     unit: 'Ω',
     valueKey: 'gasResistance',
     digits: 2,

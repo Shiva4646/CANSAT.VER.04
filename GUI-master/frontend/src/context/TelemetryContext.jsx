@@ -170,20 +170,25 @@ const updateTelemetryState = (previous, data) => {
 export function TelemetryProvider({ children }) {
   const [state, setState] = useState(initialTelemetryState)
   const [uplinkStatus, setUplinkStatus] = useState('idle')
+  const [cmdResponse, setCmdResponse] = useState('')
   const socketRef = useRef(null)
+  const pendingUplinkCommand = useRef(null)
   const lastPacketTime = useRef(0)
 
   const sendUplinkCommand = useCallback((commandString) => {
     const socket = socketRef.current
     if (!socket?.connected) return false
 
+    pendingUplinkCommand.current = commandString
     setUplinkStatus('sending')
+    setCmdResponse('')
     socket.emit('uplink_command', { text_string: commandString })
     return true
   }, [])
 
-  const resetUplinkStatus = useCallback(() => {
-    setUplinkStatus('idle')
+  const resetUplinkStatus = useCallback((status = 'idle') => {
+    pendingUplinkCommand.current = null
+    setUplinkStatus(status)
   }, [])
 
   useEffect(() => {
@@ -193,7 +198,26 @@ export function TelemetryProvider({ children }) {
     })
     socketRef.current = socket
     const handleUplinkStatus = (payload) => {
+      if (!pendingUplinkCommand.current) return
+      if (
+        payload.command &&
+        payload.command !== pendingUplinkCommand.current
+      ) {
+        return
+      }
+      pendingUplinkCommand.current = null
       setUplinkStatus(payload.success ? 'success' : 'error')
+    }
+    const handleCommandAck = (payload) => {
+      if (!pendingUplinkCommand.current) return
+      if (payload.command !== pendingUplinkCommand.current) return
+
+      pendingUplinkCommand.current = null
+      setUplinkStatus(
+        payload.status === 'OK' || payload.status === 'ACCEPTED'
+          ? 'success'
+          : 'error',
+      )
     }
     const handleTelemetryUpdate = (data) => {
       if (data && typeof data === 'object') {
@@ -207,7 +231,18 @@ export function TelemetryProvider({ children }) {
         })
       }
     }
+    const handleCommandResponse = (payload) => {
+      if (typeof payload?.response === 'string') {
+        setCmdResponse(payload.response)
+      } else if (typeof payload?.data === 'string') {
+        setCmdResponse(payload.data)
+      } else if (typeof payload?.message === 'string') {
+        setCmdResponse(payload.message)
+      }
+    }
     socket.on('uplink_status', handleUplinkStatus)
+    socket.on('command_ack', handleCommandAck)
+    socket.on('command_response', handleCommandResponse)
     socket.on('new_data', handleTelemetryUpdate)
     socket.on('telemetry_update', handleTelemetryUpdate)
     socket.on('raw_data', (rawData) => {
@@ -237,6 +272,10 @@ export function TelemetryProvider({ children }) {
       }))
     })
     socket.on('disconnect', () => {
+      if (pendingUplinkCommand.current) {
+        pendingUplinkCommand.current = null
+        setUplinkStatus('error')
+      }
       setState((previous) => ({
         ...previous,
         communication: { ...previous.communication, connected: false },
@@ -244,6 +283,8 @@ export function TelemetryProvider({ children }) {
     })
     return () => {
       socket.off('uplink_status', handleUplinkStatus)
+      socket.off('command_ack', handleCommandAck)
+      socket.off('command_response', handleCommandResponse)
       socket.off('new_data', handleTelemetryUpdate)
       socket.off('telemetry_update', handleTelemetryUpdate)
       socketRef.current = null
@@ -268,8 +309,14 @@ export function TelemetryProvider({ children }) {
   }, [])
 
   const contextValue = useMemo(
-    () => ({ ...state, uplinkStatus, sendUplinkCommand, resetUplinkStatus }),
-    [state, uplinkStatus, sendUplinkCommand, resetUplinkStatus],
+    () => ({
+      ...state,
+      uplinkStatus,
+      cmdResponse,
+      sendUplinkCommand,
+      resetUplinkStatus,
+    }),
+    [state, uplinkStatus, cmdResponse, sendUplinkCommand, resetUplinkStatus],
   )
 
   return (

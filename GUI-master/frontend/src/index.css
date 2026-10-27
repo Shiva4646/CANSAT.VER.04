@@ -4,9 +4,9 @@
 :root {
   color-scheme: dark;
   /* Enhanced color palette */
-  --gradient-primary: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
-  --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-  --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  --gradient-secondary: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
+  --gradient-accent: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
 }
 
 *,
@@ -21,7 +21,7 @@ body {
   padding: 0;
   height: 100%;
   font: 14px/1.5 'Inter', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, #0a0e17 0%, #0f1428 50%, #0a0e17 100%);
+  background: linear-gradient(135deg, #09090c 0%, #15131b 50%, #09090c 100%);
   color: #f1f5f9;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -45,15 +45,15 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 20, 40, 0.5);
+  background: rgba(17, 17, 22, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #22d3ee, #0ea5e9);
-  border-radius: 4px;
+  background: linear-gradient(180deg, #a78bfa, #6d28d9);
+  border-radius: 999px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #06b6d4, #0284c7);
+  background: linear-gradient(180deg, #c4b5fd, #7c3aed);
 }

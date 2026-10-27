@@ -15,7 +15,7 @@ import { useTelemetry } from '../context/TelemetryContext'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
-const chartColors = ['#f472b6', '#38bdf8', '#34d399']
+const chartColors = ['#ef4444', '#22c55e', '#3b82f6']
 
 function ImuChart({ title, fields }) {
   const { history } = useTelemetry()
@@ -29,7 +29,6 @@ function ImuChart({ title, fields }) {
       label: field.label,
       data: points.map((point) => point[field.key] ?? 0),
       borderColor: chartColors[index],
-      backgroundColor: 'transparent',
       borderWidth: 1.5,
       pointRadius: 0,
       pointHoverRadius: 4,
@@ -39,9 +38,9 @@ function ImuChart({ title, fields }) {
   }
 
   return (
-    <div className="card gyro-chart-card">
+    <div className="card gyro-chart-card flex-1 min-h-0">
       <h3>{title}</h3>
-      <div className="gyro-chart">
+      <div className="gyro-chart h-full min-h-0">
         <Line
           data={data}
           options={{
@@ -51,12 +50,14 @@ function ImuChart({ title, fields }) {
             interaction: { mode: 'index', intersect: false },
             plugins: {
               legend: {
+                display: true,
                 labels: { color: '#94a3b8', padding: 8, font: { size: 11 } },
               },
               tooltip: {
                 enabled: true,
                 mode: 'index',
                 intersect: false,
+                displayColors: true,
                 backgroundColor: '#101820',
                 titleColor: '#e6edf3',
                 bodyColor: '#c9d1d9',
@@ -94,13 +95,13 @@ function Gyro() {
   const handleReset = () => setResetCount((count) => count + 1)
 
   return (
-    <section className="page gyro-page">
+    <section className="page gyro-page h-[calc(100vh-76px)] min-h-0 overflow-hidden">
       <header className="route-banner">
         <Compass size={20} className="route-icon" aria-hidden="true" />
         <h2>Orientation &amp; IMU</h2>
       </header>
 
-      <div className="gyro-page-layout">
+      <div className="gyro-page-layout flex-1 min-h-0 overflow-hidden">
         <section className="card gyro-satellite-card">
           <h3>3D Satellite Model</h3>
           <Satellite3D resetTrigger={resetCount} wireframe={wireframe} />
@@ -126,7 +127,7 @@ function Gyro() {
           </div>
         </section>
 
-        <div className="gyro-charts-grid">
+        <div className="gyro-charts-grid flex flex-col flex-1 min-h-0 overflow-hidden">
           <ImuChart
             fields={[
               { key: 'accelX', label: 'Accel_X' },

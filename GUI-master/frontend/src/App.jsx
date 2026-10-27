@@ -14,6 +14,32 @@ import Sensors from './pages/Sensors'
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+  const handleDownloadLog = async () => {
+    let objectUrl
+    let anchor
+
+    try {
+      const response = await fetch('http://localhost:3000/api/download-log')
+      if (!response.ok) {
+        throw new Error(`Download request failed with status ${response.status}`)
+      }
+
+      const blob = await response.blob()
+      objectUrl = URL.createObjectURL(blob)
+      anchor = document.createElement('a')
+      anchor.href = objectUrl
+      anchor.download = 'mission_log.csv'
+      anchor.style.display = 'none'
+      document.body.appendChild(anchor)
+      anchor.click()
+    } catch {
+      alert('Unable to download the flight log. Please try again.')
+    } finally {
+      anchor?.remove()
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }
+
   return (
     <TelemetryProvider>
       <BrowserRouter>
@@ -39,7 +65,7 @@ function App() {
             <header className="top-strip">
               <div className="row">
                 <h1>CanSat Ground Station</h1>
-                <MissionTimer />
+                <MissionTimer onDownloadLog={handleDownloadLog} />
               </div>
             </header>
             <div className="dashboard-border">

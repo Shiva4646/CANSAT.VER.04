@@ -34,7 +34,7 @@
   --accent-green: #34d399;
   --accent-red: #f87171;
   --accent-amber: #fbbf24;
-  --accent-pink: #f472b6;
+  --accent-pink: #8b5cf6;
   --accent-purple: #a78bfa;
 
   /* Typography */
@@ -2000,29 +2000,6 @@ body {
   filter: none;
 }
 
-.sidebar-footer {
-  position: absolute;
-  bottom: 16px;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  color: var(--text-muted);
-}
-
-.sidebar-station {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-}
-
-.sidebar-version {
-  font-size: 10px;
-}
-
 .content-wrap {
   min-width: 0;
   min-height: 100vh;
@@ -2685,7 +2662,6 @@ a:focus-visible,
   }
 
   .sidebar-head,
-  .sidebar-footer,
   .sidebar .nav-label,
   .sidebar .sidebar-title {
     display: none;
@@ -3005,6 +2981,7 @@ a:focus-visible,
 
 .reference-dashboard .dashboard-altitude-panel .dashboard-chart-readout {
   flex: 0 0 22px;
+  padding-right: 16px;
 }
 
 .reference-dashboard .dashboard-altitude-panel .dashboard-recovery-box {
@@ -3428,9 +3405,9 @@ a:focus-visible,
 
 .reference-dashboard .dashboard-status-grid .telemetry-tile strong {
   overflow: hidden;
-  color: #58a6ff;
+  color: #a78bfa;
   background: none;
-  -webkit-text-fill-color: #58a6ff;
+  -webkit-text-fill-color: #a78bfa;
   font-family: 'JetBrains Mono', monospace;
   font-size: clamp(10px, 0.85vw, 13px);
   font-weight: 500;
@@ -3588,10 +3565,6 @@ body {
 .nav-item:hover .nav-icon,
 .nav-item.active .nav-icon {
   color: #fffaf5;
-}
-
-.sidebar-footer {
-  color: #766457;
 }
 
 .top-strip,
@@ -3800,7 +3773,7 @@ body {
   height: calc(100% - 24px);
 }
 
-.reference-dashboard > form[aria-label="Uplink command"] {
+.reference-dashboard form[aria-label="Uplink command"] {
   min-height: 68px;
   align-items: center;
   border: 1px solid rgba(118, 72, 41, 0.48);
@@ -3968,12 +3941,342 @@ a:focus-visible,
     min-height: 160px;
   }
 
-  .reference-dashboard > form[aria-label="Uplink command"] {
+  .reference-dashboard form[aria-label="Uplink command"] {
     align-items: stretch;
   }
 
   .mission-readouts {
     flex-wrap: wrap;
     justify-content: flex-start;
+  }
+}
+
+.realtime-chart,
+.dashboard-imu-chart,
+.gyro-chart {
+  box-sizing: border-box;
+  padding-inline: 8px;
+}
+
+.dashboard-chart-header {
+  padding-right: 8px;
+}
+
+.gyro-page {
+  height: calc(100vh - 76px);
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.gyro-page-layout {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gyro-page-layout > .gyro-charts-grid {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gyro-page-layout > .gyro-charts-grid > .gyro-chart-card {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gyro-page-layout > .gyro-charts-grid > .gyro-chart-card > .gyro-chart {
+  position: relative;
+  flex: 1 1 0%;
+  width: 100%;
+  height: 0;
+  min-height: 0;
+}
+
+/* Dark violet visual theme */
+:root {
+  --bg-base: #09090c;
+  --bg-surface: #111115;
+  --bg-elevated: #19191f;
+  --bg-overlay: rgba(12, 12, 16, 0.94);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.13);
+  --border-accent: rgba(139, 92, 246, 0.42);
+  --text-primary: #f4f1f8;
+  --text-secondary: #b5afbf;
+  --text-muted: #817b8b;
+  --accent-cyan: #a78bfa;
+  --accent-blue: #8b5cf6;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #8b5cf6;
+  --accent-green: #56d6a0;
+  --accent-red: #ff8b7d;
+  --accent-amber: #ffc27f;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --shadow-glow-cyan: 0 0 20px rgba(139, 92, 246, 0.16), 0 0 40px rgba(139, 92, 246, 0.08);
+  --shadow-glow-blue: 0 0 24px rgba(139, 92, 246, 0.16);
+}
+
+html,
+body {
+  background: #09090c;
+  color: var(--text-primary);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 72% 4%, rgba(139, 92, 246, 0.08), transparent 40%),
+    #09090c;
+}
+
+.app-shell {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: #28262d;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar,
+.top-strip,
+.content-wrap {
+  background: #0b0b0f;
+}
+
+.sidebar {
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-head {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-head .sidebar-brand {
+  border-color: rgba(167, 139, 250, 0.45);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #282333, #121117);
+  box-shadow: inset 0 0 18px rgba(139, 92, 246, 0.12);
+}
+
+.sidebar-logo,
+.mission-identity > svg,
+.mission-readout strong,
+.mission-readout strong small {
+  color: #b7a0ff;
+}
+
+.nav-item,
+.nav-item:hover,
+.nav-item.active {
+  border-radius: 12px;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: linear-gradient(100deg, rgba(139, 92, 246, 0.24), rgba(139, 92, 246, 0.04));
+  box-shadow: inset 0 0 18px rgba(139, 92, 246, 0.1);
+}
+
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon,
+.sidebar-toggle:hover,
+.route-icon {
+  color: #b7a0ff;
+}
+
+.sidebar-toggle,
+.collapse-btn,
+.gyro-btn {
+  border-color: rgba(167, 139, 250, 0.24);
+  border-radius: 12px;
+  background: #141319;
+}
+
+.sidebar-toggle:hover,
+.collapse-btn:hover,
+.gyro-btn:hover {
+  border-color: rgba(167, 139, 250, 0.65);
+  background: #1c1826;
+  color: #c4b2ff;
+  box-shadow: inset 0 0 14px rgba(139, 92, 246, 0.14);
+}
+
+.mission-readouts span {
+  border-color: rgba(167, 139, 250, 0.16);
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.dashboard-panel,
+.dashboard-imu-card,
+.sensor-card,
+.card,
+.gyro-satellite-card,
+.gyro-chart-card,
+.route-banner {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #17171d, #0e0e12);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 22px rgba(139, 92, 246, 0.035);
+}
+
+.dashboard-panel:hover,
+.dashboard-imu-card:hover,
+.sensor-card:hover,
+.card:hover,
+.gyro-satellite-card:hover,
+.gyro-chart-card:hover {
+  border-color: rgba(167, 139, 250, 0.38);
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 28px rgba(139, 92, 246, 0.08);
+}
+
+.dashboard-chart-card .realtime-chart,
+.realtime-chart,
+.dashboard-sensor-panel .dashboard-chart-card,
+.dashboard-altitude-panel .dashboard-chart-card,
+.dashboard-satellite-panel .satellite-3d,
+.gyro-satellite-card .satellite-3d,
+.dashboard-map-widget .gps-map,
+.gps-map {
+  border-color: rgba(167, 139, 250, 0.12);
+  border-radius: 14px;
+  background: #0b0b10;
+  box-shadow: inset 0 0 18px rgba(139, 92, 246, 0.045);
+}
+
+.dashboard-chart-header span,
+.dashboard-chart-readout,
+.sensor-readout,
+.orientation-readout strong,
+.telemetry-tile strong,
+.dashboard-status-grid .telemetry-tile strong,
+.reference-dashboard .dashboard-status-grid .telemetry-tile strong,
+.metric-value,
+.comm-metric,
+.map-overlay {
+  color: #b7a0ff;
+  -webkit-text-fill-color: currentColor;
+}
+
+.telemetry-tile,
+.dashboard-metric,
+.dashboard-power-panel .telemetry-tile,
+.dashboard-status-grid .telemetry-tile,
+.dashboard-recovery-box,
+.recovery-status,
+.gyro-readout {
+  border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: #111116;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), inset 0 0 16px rgba(139, 92, 246, 0.045);
+}
+
+.reference-dashboard .dashboard-panel,
+.reference-dashboard .dashboard-chart-card,
+.reference-dashboard .dashboard-imu-card,
+.reference-dashboard .telemetry-tile,
+.reference-dashboard .dashboard-recovery-box {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 0 20px rgba(139, 92, 246, 0.045);
+}
+
+.reference-dashboard .dashboard-imu-card {
+  border-radius: 20px;
+}
+
+.dashboard-orientation {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.recovery-status {
+  border-radius: 12px;
+}
+
+.route-banner h2,
+.card h2,
+.card h3 {
+  color: var(--text-primary);
+}
+
+.reference-dashboard > form[aria-label="Uplink command"] {
+  border-color: rgba(167, 139, 250, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(105deg, rgba(42, 34, 59, 0.86), rgba(17, 16, 22, 0.96));
+  box-shadow: inset 0 0 22px rgba(139, 92, 246, 0.07), 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+
+.reference-dashboard form[aria-label="Uplink command"] input,
+.raw-log pre {
+  border-color: rgba(167, 139, 250, 0.16);
+  border-radius: 12px;
+  background: #0b0b10;
+}
+
+.reference-dashboard form[aria-label="Uplink command"] button,
+.reference-dashboard form[aria-label="Uplink command"] button:hover,
+button[class~="bg-cyan-700"],
+button[class~="bg-cyan-600"],
+button[class~="hover:bg-cyan-600"]:hover,
+button[class~="hover:bg-cyan-500"]:hover {
+  border-color: rgba(196, 181, 253, 0.32);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 18px rgba(91, 33, 182, 0.2);
+}
+
+.reference-dashboard form[aria-label="Uplink command"] input:focus,
+.reference-dashboard form[aria-label="Uplink command"] input:not([aria-invalid="true"]):focus,
+input[class*="focus-visible:outline-cyan"]:focus-visible {
+  border-color: #8b5cf6;
+  outline-color: #8b5cf6;
+  box-shadow: inset 0 0 12px rgba(139, 92, 246, 0.12), 0 0 0 2px rgba(139, 92, 246, 0.18);
+}
+
+[class~="text-cyan-400"] {
+  color: #b7a0ff;
+}
+
+.gps-map-container .leaflet-control-zoom,
+.gps-map-container .leaflet-control-zoom a {
+  border-radius: 12px;
+  background: #15131b;
+}
+
+.gps-map-container .leaflet-control-zoom a:hover {
+  color: #c4b2ff;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.22), inset 0 0 12px rgba(139, 92, 246, 0.12);
+}
+
+button:focus-visible,
+a:focus-visible,
+.nav-item:focus-visible {
+  outline-color: #a78bfa;
+}
+
+@media (max-width: 700px) {
+  .app-shell {
+    border-radius: 0;
+  }
+
+  .sidebar,
+  .sidebar.collapsed,
+  .sidebar:not(.collapsed) {
+    border-top-color: rgba(255, 255, 255, 0.1);
+    background: #0b0b0f;
   }
 }

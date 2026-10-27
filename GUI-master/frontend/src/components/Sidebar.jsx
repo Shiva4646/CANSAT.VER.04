@@ -45,10 +45,6 @@ function Sidebar({ isOpen }) {
         ))}
       </nav>
 
-      <div className="sidebar-footer">
-        <span className="sidebar-station">INVINCIBLE / GROUND STATION</span>
-        <span className="sidebar-version">v2.0</span>
-      </div>
     </aside>
   )
 }

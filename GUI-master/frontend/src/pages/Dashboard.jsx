@@ -8,12 +8,11 @@ import {
   PointElement,
   Tooltip,
 } from 'chart.js'
-import { BatteryCharging, Download, Gauge, MapPin, Radio, Zap } from 'lucide-react'
+import { BatteryCharging, Gauge, MapPin, Radio, Zap } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import GPSMap from '../components/GPSMap'
 import RealtimeChart from '../components/RealtimeChart'
 import Satellite3D from '../components/Satellite3D'
-import UplinkControl from '../components/UplinkControl'
 import { useTelemetry } from '../context/TelemetryContext'
 
 
@@ -28,15 +27,7 @@ ChartJS.register(
 )
 
 const formatNumber = (value, digits = 2) => Number(value ?? 0).toFixed(digits)
-const imuColors = ['#ff9a4b', '#ffd08a', '#52d29a']
-
-const colorToRgba = (color, alpha) => {
-  const [red, green, blue] = color
-    .slice(1)
-    .match(/.{2}/g)
-    .map((channel) => Number.parseInt(channel, 16))
-  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
-}
+const imuColors = ['#ef4444', '#22c55e', '#3b82f6']
 
 function Metric({ icon: Icon, label, value }) {
   return (
@@ -79,23 +70,6 @@ function ImuChart({ title, fields }) {
               label: field.label,
               data: points.map((point) => point[field.key] ?? 0),
               borderColor: imuColors[index],
-              backgroundColor: (context) => {
-                const { chart } = context
-                const { ctx, chartArea } = chart
-                const color = imuColors[index]
-                if (!chartArea) return colorToRgba(color, 0.2)
-
-                const gradient = ctx.createLinearGradient(
-                  0,
-                  chartArea.top,
-                  0,
-                  chartArea.bottom,
-                )
-                gradient.addColorStop(0, colorToRgba(color, 0.25))
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-                return gradient
-              },
-              fill: true,
               borderWidth: 1.5,
               pointRadius: 0,
               pointHoverRadius: 4,
@@ -109,7 +83,7 @@ function ImuChart({ title, fields }) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-              legend: { display: false },
+              legend: { display: true },
               tooltip: {
                 enabled: true,
                 mode: 'index',
@@ -119,6 +93,7 @@ function ImuChart({ title, fields }) {
                 bodyColor: '#d8c6b6',
                 borderColor: '#654127',
                 borderWidth: 1,
+                displayColors: true,
                 padding: 10,
               },
             },
@@ -142,50 +117,14 @@ function ImuChart({ title, fields }) {
 function Dashboard() {
   const telemetry = useTelemetry()
 
-  const handleDownloadLog = async () => {
-    let objectUrl
-    let anchor
-
-    try {
-      const response = await fetch('http://localhost:3000/api/download-log')
-      if (!response.ok) {
-        throw new Error(`Download request failed with status ${response.status}`)
-      }
-
-      const blob = await response.blob()
-      objectUrl = URL.createObjectURL(blob)
-      anchor = document.createElement('a')
-      anchor.href = objectUrl
-      anchor.download = 'mission_log.csv'
-      anchor.style.display = 'none'
-      document.body.appendChild(anchor)
-      anchor.click()
-    } catch {
-      alert('Unable to download the flight log. Please try again.')
-    } finally {
-      anchor?.remove()
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-    }
-  }
-
-
   const { telemetry: values, gyroscope } = telemetry
 
   return (
     <section className="dashboard-page reference-dashboard">
-      <UplinkControl />
-      <button
-        className="flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-2 font-medium text-white transition hover:bg-cyan-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
-        onClick={handleDownloadLog}
-        type="button"
-      >
-        <Download aria-hidden="true" size={16} />
-        Download Flight Log
-      </button>
       <div className="dashboard-main-grid">
         <section className="dashboard-panel dashboard-sensor-panel">
           <div className="dashboard-chart-card">
-            <div className="dashboard-chart-header">
+            <div className="dashboard-chart-header pl-3">
               <h3>Pressure</h3>
               <span>{formatNumber(values.pressure)} hPa</span>
             </div>
@@ -195,14 +134,14 @@ function Dashboard() {
                   x: { ticks: { maxTicksLimit: 5, maxRotation: 25, minRotation: 25 } },
                 },
               }}
-              color="#ffad67"
+              color="#22D3EE"
               label="Pressure"
               metric="pressure"
               unit="hPa"
             />
           </div>
           <div className="dashboard-chart-card">
-            <div className="dashboard-chart-header">
+            <div className="dashboard-chart-header pl-3">
               <h3>Temperature</h3>
               <span>{formatNumber(values.temperature, 2)} °C</span>
             </div>
@@ -212,7 +151,7 @@ function Dashboard() {
                   x: { ticks: { maxTicksLimit: 5, maxRotation: 25, minRotation: 25 } },
                 },
               }}
-              color="#ffd08a"
+              color="#FB923C"
               label="Temperature"
               metric="temperature"
               unit="°C"
@@ -241,18 +180,19 @@ function Dashboard() {
 
         <section className="dashboard-panel dashboard-altitude-panel">
           <div className="dashboard-chart-card">
-            <div className="dashboard-chart-header">
+            <div className="dashboard-chart-header pl-3">
               <h3>Altitude</h3>
             </div>
             <RealtimeChart
               chartOptions={{
                 maintainAspectRatio: false,
+                layout: { padding: { right: 16 } },
                 scales: {
                   x: { ticks: { maxTicksLimit: 5, maxRotation: 0, minRotation: 0 } },
                   y: { beginAtZero: false, grace: '10%' },
                 },
               }}
-              color="#ff8a32"
+              color="#34D399"
               height="100%"
               label="Altitude"
               metric="altitude"

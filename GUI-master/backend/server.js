@@ -58,6 +58,15 @@ server.listen(3000, () => {
 const defaultSerialPath = process.platform === 'win32' ? 'COM8' : '/dev/ttyUSB0';
 const serialPath = process.env.SERIAL_PORT || defaultSerialPath;
 const serialBaudRate = 115200;
+const validUplinkCommands = new Set([
+  'BOOT',
+  'HC',
+  'CALC',
+  'TX_ON',
+  'TX_OFF',
+  'STATUS',
+  'RESET',
+]);
 
 let port = null;
 let parser = null;
@@ -153,7 +162,40 @@ function startSimulator() {
 }
 
 function handleSerialData(data) {
-  const line = data.toString();
+  const line = data.toString().trim();
+
+  if (line.startsWith('ACK,046,')) {
+    console.log('<<< ACK RECEIVED FROM ESP32:', line);
+  }
+
+  const ackMatch = line.match(
+    /^ACK,046,(BOOT|HC|CALC|TX_ON|TX_OFF|STATUS|RESET),(OK|ACCEPTED|REJECTED)$/,
+  );
+  if (ackMatch) {
+    const [, command, status] = ackMatch;
+    io.emit('command_ack', { status, command });
+    io.emit('uplink_status', {
+      success: status === 'OK' || status === 'ACCEPTED',
+      status,
+      command,
+    });
+    return;
+  }
+
+  const commandResponsePrefixes = [
+    'BOOT,',
+    'HC,',
+    'CALC,',
+    'TX,',
+    'STATUS,',
+    'RESET,',
+  ];
+  if (commandResponsePrefixes.some((prefix) => line.startsWith(prefix))) {
+    console.log('<<< COMMAND RESPONSE FROM ESP32:', line);
+    io.emit('command_response', { response: line });
+    return;
+  }
+
   if (line.includes('team_id')) {
     return;
   }
@@ -343,7 +385,7 @@ function startSerialBridge() {
         return;
       }
 
-      parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+      parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
       parser.on('error', (parseErr) => {
         console.error('Serial parser error:', parseErr.message);
@@ -367,9 +409,6 @@ io.on('connection', (socket) => {
     baudRate: port?.baudRate || serialBaudRate
   });
 
-  let uplinkTimeout = null;
-  let uplinkAckListener = null;
-
   socket.on('uplink_command', (payload) => {
     const textString = payload?.text_string;
     console.log(`Received from React: ${textString}`);
@@ -380,48 +419,22 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (uplinkTimeout) {
-      clearTimeout(uplinkTimeout);
-      uplinkTimeout = null;
-    }
-    if (uplinkAckListener) {
-      parser.removeListener('data', uplinkAckListener);
-      uplinkAckListener = null;
+    const command = textString.trim().toUpperCase();
+    if (!validUplinkCommands.has(command)) {
+      console.error(`Rejected invalid uplink command: ${command}`);
+      socket.emit('uplink_status', { success: false, error: 'Invalid command' });
+      return;
     }
 
-    let completed = false;
-    const finishUplink = (success) => {
-      if (completed) return;
-      completed = true;
-      if (uplinkTimeout) {
-        clearTimeout(uplinkTimeout);
-        uplinkTimeout = null;
-      }
-      if (uplinkAckListener) {
-        parser.removeListener('data', uplinkAckListener);
-        uplinkAckListener = null;
-      }
-      socket.emit('uplink_status', { success });
-    };
-
-    const listenForAck = (data) => {
-      if (data.toString().includes('ACK')) {
-        finishUplink(true);
-      } else {
-        parser.once('data', listenForAck);
-      }
-    };
-    uplinkAckListener = listenForAck;
-
-    port.write(textString, (err) => {
+    const formattedCommand = `CMD,046,${command}\n`;
+    console.log('>>> RECEIVED FROM UI & SENDING TO ESP32:', formattedCommand);
+    port.write(formattedCommand, (err) => {
       if (err) {
         console.error('Error sending uplink over serial:', err.message);
-        finishUplink(false);
+        socket.emit('uplink_status', { success: false, command });
+        return;
       }
     });
-
-    uplinkTimeout = setTimeout(() => finishUplink(false), 3000);
-    parser.once('data', listenForAck);
   });
 
   socket.on('send_command', (commandData) => {

@@ -14,14 +14,6 @@ import { useTelemetry } from '../context/TelemetryContext'
 
 const EMPTY_POINT = { timestamp: 0, altitude: 0, pressure: 0, temperature: 0 }
 
-const colorToRgba = (color, alpha) => {
-  const [red, green, blue] = color
-    .slice(1)
-    .match(/.{2}/g)
-    .map((channel) => Number.parseInt(channel, 16))
-  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
-}
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -53,16 +45,6 @@ function RealtimeChart({
         label: `${label}${unit ? ` (${unit})` : ''}`,
         data: points.map((point) => point[metric] ?? 0),
         borderColor: color,
-        backgroundColor: (context) => {
-          const { chart } = context
-          const { ctx, chartArea } = chart
-          if (!chartArea) return colorToRgba(color, 0.2)
-          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-          gradient.addColorStop(0, colorToRgba(color, 0.25))
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-          return gradient
-        },
-        fill: true,
         tension: 0.35,
         pointRadius: 0,
         pointHoverRadius: 4,
@@ -93,10 +75,10 @@ function RealtimeChart({
               enabled: true,
               mode: 'index',
               intersect: false,
-              backgroundColor: '#24170e',
-              titleColor: '#f6eee7',
-              bodyColor: '#d8c6b6',
-              borderColor: '#654127',
+              backgroundColor: '#17131f',
+              titleColor: '#f4f1f8',
+              bodyColor: '#c4b5fd',
+              borderColor: '#6d28d9',
               borderWidth: 1,
               displayColors: true,
               padding: 10,
@@ -106,25 +88,25 @@ function RealtimeChart({
           scales: {
             x: {
               grid: {
-                color: 'rgba(56, 68, 90, 0.3)',
+                color: 'rgba(167, 139, 250, 0.12)',
                 borderDash: [2, 4],
               },
               ...chartOptions.scales?.x,
               ticks: {
                 maxTicksLimit: 6,
-                color: '#64748b',
+                color: '#817b8b',
                 font: { size: 10 },
                 ...chartOptions.scales?.x?.ticks,
               },
             },
             y: {
               grid: {
-                color: 'rgba(56, 68, 90, 0.3)',
+                color: 'rgba(167, 139, 250, 0.12)',
                 borderDash: [2, 4],
               },
               ...chartOptions.scales?.y,
               ticks: {
-                color: '#64748b',
+                color: '#817b8b',
                 font: { size: 10 },
                 ...chartOptions.scales?.y?.ticks,
               },

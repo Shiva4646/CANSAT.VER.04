@@ -1,75 +1,69 @@
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useRef } from 'react'
-import { CylinderGeometry, EdgesGeometry } from 'three'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { Box3, Vector3 } from 'three'
 import { useTelemetry } from '../context/TelemetryContext'
 
+const MODEL_TARGET_SIZE = 2.4
 const degreesToRadians = (degrees) => (degrees * Math.PI) / 180
-const BODY_RADIUS = 1.1
-const BODY_HEIGHT = 2.8
-const INNER_RADIUS = BODY_RADIUS * 0.5
-const INNER_HEIGHT = 1.5
-const RING_RADIUS = 1.2
-const RING_TUBE = 0.12
-const OUTER_EDGE_GEOMETRY = new EdgesGeometry(
-  new CylinderGeometry(BODY_RADIUS, BODY_RADIUS, BODY_HEIGHT, 28, 1, true),
-)
 
 function SatelliteMesh({ wireframe }) {
-  const meshRef = useRef(null)
+  const { scene } = useGLTF('/cansat.glb')
   const { gyroscope } = useTelemetry()
+  const rotationRef = useRef(null)
 
   useFrame(() => {
-    if (!meshRef.current) return
+    if (!rotationRef.current) return
 
     const targetRotation = {
-      x: degreesToRadians(gyroscope.roll),
-      y: degreesToRadians(gyroscope.pitch),
-      z: degreesToRadians(gyroscope.yaw),
+      x: degreesToRadians(gyroscope.pitch),
+      y: degreesToRadians(gyroscope.yaw),
+      z: degreesToRadians(gyroscope.roll),
     }
 
-    meshRef.current.rotation.x +=
-      (targetRotation.x - meshRef.current.rotation.x) * 0.1
-    meshRef.current.rotation.y +=
-      (targetRotation.y - meshRef.current.rotation.y) * 0.1
-    meshRef.current.rotation.z +=
-      (targetRotation.z - meshRef.current.rotation.z) * 0.1
+    rotationRef.current.rotation.x +=
+      (targetRotation.x - rotationRef.current.rotation.x) * 0.1
+    rotationRef.current.rotation.y +=
+      (targetRotation.y - rotationRef.current.rotation.y) * 0.1
+    rotationRef.current.rotation.z +=
+      (targetRotation.z - rotationRef.current.rotation.z) * 0.1
   })
 
+  const { model, position, scale } = useMemo(() => {
+    const clonedScene = scene.clone(true)
+    clonedScene.traverse((object) => {
+      if (!object.isMesh) return
+
+      const cloneMaterial = (material) => {
+        const clonedMaterial = material.clone()
+        clonedMaterial.wireframe = wireframe
+        return clonedMaterial
+      }
+
+      object.material = Array.isArray(object.material)
+        ? object.material.map(cloneMaterial)
+        : cloneMaterial(object.material)
+    })
+    const bounds = new Box3().setFromObject(clonedScene)
+    const center = bounds.getCenter(new Vector3())
+    const size = bounds.getSize(new Vector3())
+    const fitScale = MODEL_TARGET_SIZE / Math.max(size.x, size.y, size.z)
+
+    return {
+      model: clonedScene,
+      position: center.multiplyScalar(-fitScale).toArray(),
+      scale: fitScale,
+    }
+  }, [scene, wireframe])
+
   return (
-    <group ref={meshRef}>
-      <group>
-        <mesh>
-          <cylinderGeometry args={[BODY_RADIUS, BODY_RADIUS, BODY_HEIGHT, 28, 1, true]} />
-          <meshStandardMaterial
-            color="#0a192f"
-            emissive="#071426"
-            metalness={0.15}
-            roughness={0.2}
-            transparent
-            opacity={0.3}
-            wireframe={wireframe}
-          />
-        </mesh>
-        <lineSegments>
-          <primitive attach="geometry" object={OUTER_EDGE_GEOMETRY} />
-          <lineBasicMaterial color="#00d2ff" />
-        </lineSegments>
+    <group>
+      <group ref={rotationRef}>
+        <group position={position} scale={scale}>
+          <primitive object={model} />
+        </group>
       </group>
-      <mesh>
-        <cylinderGeometry args={[INNER_RADIUS, INNER_RADIUS, INNER_HEIGHT, 20, 6]} />
-        <meshBasicMaterial color="#00f0ff" wireframe />
-      </mesh>
-      <group>
-        <mesh position={[0, BODY_HEIGHT / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[RING_RADIUS, RING_TUBE, 16, 64]} />
-          <meshBasicMaterial color="#ff7a1a" wireframe={wireframe} />
-        </mesh>
-        <mesh position={[0, -BODY_HEIGHT / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[RING_RADIUS, RING_TUBE, 16, 64]} />
-          <meshBasicMaterial color="#3c8dff" wireframe={wireframe} />
-        </mesh>
-      </group>
+      <axesHelper args={[1.5]} />
     </group>
   )
 }
@@ -100,7 +94,9 @@ function Satellite3D({ wireframe = false, resetTrigger = 0 }) {
         <directionalLight color="#ffffff" intensity={1.2} position={[3, 4, 5]} />
         <directionalLight color="#00f0ff" intensity={0.5} position={[-4, -2, -3]} />
         <ResettableCamera controlsRef={controlsRef} resetTrigger={resetTrigger} />
-        <SatelliteMesh wireframe={wireframe} />
+        <Suspense fallback={null}>
+          <SatelliteMesh wireframe={wireframe} />
+        </Suspense>
         <OrbitControls ref={controlsRef} enableDamping />
       </Canvas>
     </div>
